@@ -1,6 +1,6 @@
 from operator import itemgetter
 import numpy as np
-
+import sys
 def readFile(filename):
     P = []
     with open(filename, 'r') as f:
@@ -58,29 +58,31 @@ def checkMid(Yp, delta):
 def Closest(P, X, Y):
     N = len(X)
     if N <= 3:
-        d1 = EuclideanDistance(P[1], P[2])
-        d2 = EuclideanDistance(P[1], P[3])
-        d3 = EuclideanDistance(P[2], P[3])
-        smallest = min(d1, d2, d3)
-        if smallest == d1:
-            return (P[1][0], P[2][0])
-        elif smallest == d2:
-            return (P[1][0], P[3][0])
-        else:
-            return (P[2][0], P[3][0])
+        d = sys.float_info.max
+        z = ()
+        for x1 in X:
+            for x2 in X:
+                if x1[0] == x2[0]:
+                    continue
+                ed = EuclideanDistance(x1, x2)
+                if ed < d:
+                    d = ed
+                    z = (x1[0], x2[0])
+        return z
     else:
         mid = int(N/2)
         delta = 0
         Z = ()
         Lx = X[:mid]
-        Rx = X[mid+1:]
+        Rx = X[mid:]
         Ly, Ry = splitYArray(Y, mid)
+
 
         Zl = Closest(P, Lx, Ly)
         Zr = Closest(P, Rx, Ry)
 
-        ld = EuclideanDistance(getPoint(P,Zl[0]), getPoint(P, Zl[0]))
-        rd = EuclideanDistance(getPoint(P, Zr[0]), getPoint(P, Zr[0]))
+        ld = EuclideanDistance(getPoint(P,Zl[0]), getPoint(P, Zl[1]))
+        rd = EuclideanDistance(getPoint(P, Zr[0]), getPoint(P, Zr[1]))
 
         if ld < rd:
             Z = Zl
@@ -95,15 +97,14 @@ def Closest(P, X, Y):
 
         if len(Zm) != 0:
             Z = Zm
-
         return Z
 
 
 if __name__=='__main__':
-    import sys
     filename = sys.argv[1]
     nps = readFile(filename)
     P = sorted(nps)
     X = sorted(nps, key=lambda row: row[1])
     Y = sorted(nps, key=lambda row: row[2])
     closestPoints = Closest(P,X,Y)
+    print(closestPoints)
