@@ -20,7 +20,7 @@ def getPoint(P, id):
     return 'null'
 
 def EuclideanDistance(p1, p2):
-    np.linalg.norm(np.array(p1[1:])-np.array(p2[1:]))
+    return np.linalg.norm(np.array(p1[1:])-np.array(p2[1:]))
 
 def splitYArray(Y, mid):
     L = []
@@ -32,8 +32,31 @@ def splitYArray(Y, mid):
             L.append(y)
     return L, R
 
+def buildYprime(Y, delta, mid):
+    from math import fabs
+    Yp = []
+    for y in Y:
+        if np.abs(mid - y[1]) < delta:
+            Yp.append(y)
+    return Yp
+
+def checkMid(Yp, delta):
+    d = 0.0
+    z = ()
+    for p in Yp:
+        for q in Yp:
+            if p[0] == q[0]:
+                continue
+            if (q[2] - p[2]) > delta:
+                break
+            else:
+                d = EuclideanDistance(p, q)
+                if d < delta:
+                    z = (p[0], q[0])
+    return z
+
 def Closest(P, X, Y):
-    N = len(P)
+    N = len(X)
     if N <= 3:
         d1 = EuclideanDistance(P[1], P[2])
         d2 = EuclideanDistance(P[1], P[3])
@@ -47,6 +70,8 @@ def Closest(P, X, Y):
             return (P[2][0], P[3][0])
     else:
         mid = int(N/2)
+        delta = 0
+        Z = ()
         Lx = X[:mid]
         Rx = X[mid+1:]
         Ly, Ry = splitYArray(Y, mid)
@@ -54,7 +79,24 @@ def Closest(P, X, Y):
         Zl = Closest(P, Lx, Ly)
         Zr = Closest(P, Rx, Ry)
 
-        
+        ld = EuclideanDistance(getPoint(P,Zl[0]), getPoint(P, Zl[0]))
+        rd = EuclideanDistance(getPoint(P, Zr[0]), getPoint(P, Zr[0]))
+
+        if ld < rd:
+            Z = Zl
+            delta = ld
+        else:
+            Z = Zr
+            delta = rd
+
+        Yp = buildYprime(Y, delta, mid)
+
+        Zm = checkMid(Yp, delta)
+
+        if len(Zm) != 0:
+            Z = Zm
+
+        return Z
 
 
 if __name__=='__main__':
@@ -64,4 +106,4 @@ if __name__=='__main__':
     P = sorted(nps)
     X = sorted(nps, key=lambda row: row[1])
     Y = sorted(nps, key=lambda row: row[2])
-    #closestPoints = Closest(P,X,Y)
+    closestPoints = Closest(P,X,Y)
