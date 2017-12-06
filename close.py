@@ -1,6 +1,8 @@
 from operator import itemgetter
 import numpy as np
 import sys
+from helper import write_final_answer
+
 def readFile(filename):
     P = []
     with open(filename, 'r') as f:
@@ -47,12 +49,14 @@ def checkMid(Yp, delta):
         for q in Yp:
             if p[0] == q[0]:
                 continue
+            if q[2] < p[2]:
+                continue
             if (q[2] - p[2]) > delta:
                 break
             else:
                 d = EuclideanDistance(p, q)
                 if d < delta:
-                    z = (p[0], q[0])
+                    z = (p, q)
     return z
 
 def Closest(P, X, Y):
@@ -67,7 +71,7 @@ def Closest(P, X, Y):
                 ed = EuclideanDistance(x1, x2)
                 if ed < d:
                     d = ed
-                    z = (x1[0], x2[0])
+                    z = (x1, x2)
         return z
     else:
         mid = int(N/2)
@@ -81,8 +85,8 @@ def Closest(P, X, Y):
         Zl = Closest(P, Lx, Ly)
         Zr = Closest(P, Rx, Ry)
 
-        ld = EuclideanDistance(getPoint(P,Zl[0]), getPoint(P, Zl[1]))
-        rd = EuclideanDistance(getPoint(P, Zr[0]), getPoint(P, Zr[1]))
+        ld = EuclideanDistance(Zl[0], Zl[1])
+        rd = EuclideanDistance(Zr[0], Zr[1])
 
         if ld < rd:
             Z = Zl
@@ -101,10 +105,17 @@ def Closest(P, X, Y):
 
 
 if __name__=='__main__':
+
+    import time
+
     filename = sys.argv[1]
     nps = readFile(filename)
+    start = time.process_time()
     P = sorted(nps)
-    X = sorted(nps, key=lambda row: row[1])
-    Y = sorted(nps, key=lambda row: row[2])
+    X = sorted(nps, key=itemgetter(1))
+    Y = sorted(nps, key=itemgetter(2))
     closestPoints = Closest(P,X,Y)
-    print(closestPoints)
+    end = time.process_time()
+    closestPoints = (closestPoints[0][0], closestPoints[1][0])
+    print("Problem of size " + str(len(P)) + " ran in: {:.5f} secs".format(end - start))
+    write_final_answer(filename, closestPoints)
